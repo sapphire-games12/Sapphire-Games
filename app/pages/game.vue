@@ -11,6 +11,15 @@
           <button @click="fullscreenGame" class="control-btn">⛶ Fullscreen</button>
           <button @click="openInNewWindow" class="control-btn">New Window</button>
           <button @click="downloadGame" class="control-btn">Download</button>
+          <button @click="exportSave" class="control-btn">📥 Export Save</button>
+          <button @click="triggerImport" class="control-btn">📤 Import Save</button>
+          <input
+            ref="fileInput"
+            type="file"
+            accept=".json"
+            style="display: none"
+            @change="importSave"
+          />
         </div>
       </div>
 
@@ -51,6 +60,7 @@ interface Game {
 const route = useRoute();
 const router = useRouter();
 const gameFrame = ref<HTMLIFrameElement | null>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
 const isLoading = ref(true);
 const loadingMessage = ref('Loading game...');
 const gameName = ref('');
@@ -125,6 +135,132 @@ const downloadGame = () => {
 
 const closeGame = () => {
   router.back();
+};
+
+const exportSave = () => {
+  if (!gameFrame.value || !gameFrame.value.contentWindow) {
+    alert('Game not loaded. Please wait for the game to fully load.');
+    return;
+  }
+
+  try {
+    const gameWindow = gameFrame.value.contentWindow;
+    
+    // Try to get save data from localStorage within the iframe
+    let saveData: Record<string, any> = {};
+    
+    try {
+      const localStorageData = gameWindow.localStorage;
+      for (let i = 0; i < localStorageData.length; i++) {
+        const key = localStorageData.key(i);
+        if (key) {
+          saveData[key] = localStorageData.getItem(key);
+        }
+      }
+    } catch (e) {
+      console.log('Could not access localStorage:', e);
+    }
+
+    // Also try to capture window.gameState or similar game-specific save data
+    if ((gameWindow as any).gameState) {
+      saveData.gameState = (gameWindow as any).gameState;
+    }
+    if ((gameWindow as any).game) {
+      saveData.game = (gameWindow as any).game;
+    }
+
+    const saveFile = {
+      gameName: gameName.value,
+      gameId: currentGame.value?.id,
+      timestamp: new Date().toISOString(),
+      saveData: saveData
+    };
+
+    const jsonString = JSON.stringify(saveFile, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${gameName.value}-save-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert('Save exported successfully!');
+  } catch (error) {
+    console.error('Failed to export save:', error);
+    alert('Failed to export save. The game may not support saving.');
+  }
+};
+
+const triggerImport = () => {
+  if (fileInput.value) {
+    fileInput.value.click();
+  }
+};
+
+const importSave = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (!file) return;
+
+  if (!gameFrame.value || !gameFrame.value.contentWindow) {
+    alert('Game not loaded. Please wait for the game to fully load.');
+    return;
+  }
+
+  try {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const contents = e.target?.result as string;
+        const saveFile = JSON.parse(contents);
+        
+        // Verify it's a valid save file
+        if (!saveFile.saveData) {
+          alert('Invalid save file format.');
+          return;
+        }
+
+        const gameWindow = gameFrame.value!.contentWindow;
+        
+        // Restore localStorage data
+        for (const [key, value] of Object.entries(saveFile.saveData)) {
+          if (key !== 'gameState' && key !== 'game') {
+            try {
+              gameWindow!.localStorage.setItem(key, value as string);
+            } catch (storageError) {
+              console.log('Could not restore localStorage item:', key, storageError);
+            }
+          }
+        }
+
+        // Restore game-specific state
+        if (saveFile.saveData.gameState && (gameWindow as any).restoreGameState) {
+          (gameWindow as any).restoreGameState(saveFile.saveData.gameState);
+        }
+        if (saveFile.saveData.game && (gameWindow as any).restoreGame) {
+          (gameWindow as any).restoreGame(saveFile.saveData.game);
+        }
+
+        alert('Save imported successfully! Reload the game or press F5 to see changes.');
+      } catch (parseError) {
+        console.error('Failed to parse save file:', parseError);
+        alert('Failed to parse save file. Make sure it\'s a valid save file.');
+      }
+    };
+    
+    reader.readAsText(file);
+  } catch (error) {
+    console.error('Failed to import save:', error);
+    alert('Failed to import save.');
+  }
+
+  // Reset the input so the same file can be selected again
+  target.value = '';
 };
 
 const loadGameData = async () => {
