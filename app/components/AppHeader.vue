@@ -4,6 +4,7 @@
       <img src="/logo.png" alt="Sapphire Games Logo" class="logo" />
       <nav class="navbar">
         <a href="/">Home</a>
+        <a href="/save-manager">Save Manager</a>
       </nav>
     </div>
   </div>
