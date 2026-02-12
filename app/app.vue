@@ -9,6 +9,21 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({
+  title: "My Drive - Google Drive"
+});
+useHead({
+  htmlAttrs: {
+    lang: 'en'
+  },
+  link: [
+    {
+      rel: 'icon',
+      type: 'image/x-icon',
+      href: 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png'
+    },
+  ]
+});
 </script>
 
 <style>
@@ -23,12 +38,12 @@ html, body {
 .app-container {
   display: flex;
   flex-direction: column;
-  width: 90%;
+  width: 100%;
   max-width: 1200px;
-  margin: 2rem auto;
+  margin: 0 auto;
   background-color: white;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+  border-radius: 0;
   overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

@@ -2,9 +2,10 @@
   <div class="header">
     <div class="header-content">
       <img src="/logo.png" alt="Sapphire Games Logo" class="logo" />
-      <nav class="navbar">
+    </div>
+    <div class="navbar">
         <a href="/">Home</a>
-      </nav>
+        <a href="/credits">Credits</a>
     </div>
   </div>
 </template>
@@ -17,7 +18,7 @@
 
 .header {
   width: 100%;
-  background-image: linear-gradient(to bottom, #1e5db8, #5aa5d5);
+  background-image: linear-gradient(to bottom, #1e5eb800, #5aa5d5);
   padding: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
@@ -44,9 +45,10 @@
 }
 
 .navbar a {
-  color: white;
+  color: blue;
+  font-weight: 0.5rem;
+  margin: 10px 1rem;
   text-decoration: none;
-  font-weight: bold;
   font-size: 1rem;
 }
 

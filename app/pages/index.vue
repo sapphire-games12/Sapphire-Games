@@ -1,6 +1,5 @@
 <template>
   <div class="games-container">
-    <!-- Controls Section -->
     <div class="controls-section">
       <input
         v-model="searchQuery"
@@ -15,10 +14,8 @@
       </select>
     </div>
 
-    <!-- Game Count -->
     <div class="game-count">{{ filteredGames.length }} games found</div>
 
-    <!-- Games Grid -->
     <div class="games-grid">
       <NuxtLink
         v-for="game in filteredGames"
@@ -58,10 +55,13 @@ interface Game {
 definePageMeta({
   ssr: false
 });
+useSeoMeta({
+  title: "Sapphire - Google Drive"
+})
 
 const games = ref<Game[]>([]);
 const searchQuery = ref('');
-const sortBy = ref('name');
+const sortBy = ref('popular');
 
 const zonesURL = "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json?t=" + Date.now();
 const coverURL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
@@ -137,7 +137,7 @@ onMounted(async () => {
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding: 1rem;
+  margin-top: -1rem;
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.5);
