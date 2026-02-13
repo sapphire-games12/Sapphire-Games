@@ -61,14 +61,12 @@ useSeoMeta({
 
 const games = ref<Game[]>([]);
 const searchQuery = ref('');
-const sortBy = ref('popular');
+const sortBy = ref<'name' | 'id' | 'popular'>('popular');
+const popularityData = ref<Record<number, number>>({});
 
 const zonesURL = "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json?t=" + Date.now();
 const coverURL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
 const htmlURL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
-
-let allGames: Game[] = [];
-let popularityData: Record<number, number> = {};
 
 const filteredGames = computed(() => {
   let filtered = games.value.filter(game =>
@@ -77,18 +75,19 @@ const filteredGames = computed(() => {
   );
 
   if (sortBy.value === 'name') {
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
   } else if (sortBy.value === 'id') {
-    filtered.sort((a, b) => a.id - b.id);
+    filtered = [...filtered].sort((a, b) => a.id - b.id);
   } else if (sortBy.value === 'popular') {
-    filtered.sort((a, b) => (popularityData[b.id] || 0) - (popularityData[a.id] || 0));
+    filtered = [...filtered].sort(
+      (a, b) => (popularityData.value[b.id] || 0) - (popularityData.value[a.id] || 0)
+    );
   }
 
   return filtered;
 });
 
 const sortGames = () => {
-  // Trigger computed property update
   games.value = [...games.value];
 };
 
@@ -96,13 +95,15 @@ const fetchPopularity = async () => {
   try {
     const response = await fetch("https://data.jsdelivr.com/v1/stats/packages/gh/gn-math/html@main/files?period=year");
     const data = await response.json();
+    const map: Record<number, number> = {};
     data.forEach((file: any) => {
       const idMatch = file.name.match(/\/(\d+)\.html$/);
       if (idMatch) {
         const id = parseInt(idMatch[1]);
-        popularityData[id] = file.hits.total;
+        map[id] = file.hits.total;
       }
     });
+    popularityData.value = map;
   } catch (error) {
     console.error('Failed to fetch popularity:', error);
   }
@@ -125,6 +126,7 @@ onMounted(async () => {
   }
 });
 </script>
+
 
 <style scoped>
 .games-container {
