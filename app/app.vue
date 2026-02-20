@@ -8,23 +8,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-useSeoMeta({
-  title: "My Drive - Google Drive"
-});
-useHead({
-  htmlAttrs: {
-    lang: 'en'
-  },
-  link: [
-    {
-      rel: 'icon',
-      type: 'image/x-icon',
-      href: 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png'
-    },
-  ]
-});
-</script>
 
 <style>
 html, body {
